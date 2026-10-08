@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ============================================================================
+     7 Days to Die : AllyOnKill（倒した敵を味方にする MOD）
+     ビルド前に必ず GameDir を自分のインストール先に合わせてください。
+
+       dotnet build -c Release -p:GameDir="C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die"
+    ============================================================================
+  -->
+
+  <PropertyGroup>
+    <!-- 7DTD v3.x は .NET Framework 4.8。v2.x でビルドする場合は net472 に変更 -->
+    <TargetFramework Condition=" '$(TargetFramework)' == '' ">net48</TargetFramework>
+    <AssemblyName>AllyOnKill</AssemblyName>
+    <RootNamespace>AllyOnKill</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+    <NoWarn>CS0618;CS0649;CS0169;CS0414;NU1701</NoWarn>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GameDir Condition=" '$(GameDir)' == '' ">C:\Program Files (x86)\Steam\steamapps\common\7 Days To Die</GameDir>
+    <ManagedDir>$(GameDir)\7DaysToDie_Data\Managed</ManagedDir>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+
+  <!--
+    0Harmony.dll はゲーム本体の Managed フォルダには入っていません。
+    7DTD は Harmony を「0_TFP_Harmony」という MOD として配布しているため、
+    ゲームフォルダ側 と %APPDATA% 側 の Mods\0_TFP_Harmony\ に置かれます。
+    両方を順に探し、最後の手段として Managed も見ます。
+  -->
+  <PropertyGroup>
+    <HarmonyPath Condition=" '$(HarmonyPath)' == '' And Exists('$(GameDir)\Mods\0_TFP_Harmony\0Harmony.dll') ">$(GameDir)\Mods\0_TFP_Harmony\0Harmony.dll</HarmonyPath>
+    <HarmonyPath Condition=" '$(HarmonyPath)' == '' And Exists('$(APPDATA)\7DaysToDie\Mods\0_TFP_Harmony\0Harmony.dll') ">$(APPDATA)\7DaysToDie\Mods\0_TFP_Harmony\0Harmony.dll</HarmonyPath>
+    <HarmonyPath Condition=" '$(HarmonyPath)' == '' ">$(ManagedDir)\0Harmony.dll</HarmonyPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyPath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(ManagedDir)\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="LogLibrary" Condition="Exists('$(ManagedDir)\LogLibrary.dll')">
+      <HintPath>$(ManagedDir)\LogLibrary.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine" Condition="Exists('$(ManagedDir)\UnityEngine.dll')">
+      <HintPath>$(ManagedDir)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

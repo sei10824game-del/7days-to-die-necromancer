@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  AllyOnKill 設定ファイル
+  ゲームを再起動すると反映されます。値を消した項目は既定値が使われます。
+-->
+<AllyOnKill>
+
+  <!-- ===== 味方化 ===== -->
+
+  <!-- 倒した敵を味方にする機能そのもの。トラブル時は false にすると全て止まります -->
+  <ConvertOnKill value="true" />
+
+  <!-- 倒した敵が味方になる確率（0.0 ～ 1.0） -->
+  <ConvertChance value="1.0" />
+
+  <!--
+    味方をプレイヤーの Companions 一覧（HUD）にも追加する。
+    V3.x の Companions は UI と連動しており、敵エンティティを入れると
+      [XUi] Error while updating window group 'toolbelt':
+      Object reference not set to an instance of an object
+    が毎フレーム出て操作不能になることがあります。既定は false（追加しない）。
+  -->
+  <AddToCompanions value="false" />
+
+  <!-- プレイヤーからこの距離(m)以内で倒れた敵だけ味方化する -->
+  <ConvertRadius value="45" />
+
+  <!-- 同時に抱えられる味方の上限 -->
+  <MaxAllies value="8" />
+
+  <!-- true にすると、蘇った後の死体を即座に消します（見た目がスッキリします） -->
+  <RemoveCorpse value="true" />
+
+  <!--
+    味方化しないエンティティ名。カンマ区切り・部分一致（大文字小文字は区別しません）。
+    表示名（EntityName）と entityclasses.xml のクラス名の両方を見ます。
+    例: コップとビヘモスは除外したい場合
+      <Blacklist value="cop, behemoth" />
+  -->
+  <Blacklist value="" />
+
+  <!-- true にすると上の Blacklist を「許可リスト」として扱います（書かれたものだけ味方化） -->
+  <BlacklistIsWhitelist value="false" />
+
+
+  <!-- ===== 追従（G キー） ===== -->
+
+  <!-- 追従を切り替えるキー。UnityEngine.KeyCode 名がそのまま使えます（G, H, F, J, LeftControl 等） -->
+  <FollowKey value="G" />
+
+  <!-- 味方を全員解放するキー。使わない場合は None -->
+  <DismissKey value="H" />
+
+  <!-- ゲーム開始直後の追従状態 -->
+  <FollowByDefault value="true" />
+
+  <!-- この距離(m)より離れたら歩いて近づく -->
+  <FollowDistance value="4" />
+
+  <!-- この距離(m)より離れたらプレイヤーの近くにテレポート（置き去り/デスポーン対策） -->
+  <TeleportDistance value="70" />
+
+
+  <!-- ===== 戦闘 ===== -->
+
+  <!-- 味方が自動で近くの敵を攻撃する -->
+  <AssistPlayer value="true" />
+
+  <!-- 敵を探す半径(m) -->
+  <AssistRadius value="20" />
+
+  <!-- 動物（EntityAnimal）も攻撃対象に含める。通常はゾンビ系だけで十分です -->
+  <AttackAnimals value="false" />
+
+  <!--
+    ===== 直接攻撃 =====
+    7DTD のゾンビ AI は「攻撃対象クラス」が entityclasses.xml で決まっており、
+    ゾンビは原則プレイヤー / NPC しか狙いません。
+    SetAttackTarget() で別のゾンビを指定しても AI 側で弾かれるため、
+    AI を通さず直接ダメージを与える方式を使います（これが本命）。
+  -->
+
+  <!-- 直接攻撃を使う（false にすると AI 任せになり、ほぼ戦いません） -->
+  <DirectAssist value="true" />
+
+  <!-- 直接攻撃が届く距離(m)。近接間隔くらいが自然です -->
+  <DirectAssistRange value="3.2" />
+
+  <!-- 直接攻撃1回のダメージ -->
+  <DirectAssistDamage value="25" />
+
+  <!-- 直接攻撃の間隔(秒) -->
+  <DirectAssistInterval value="1.1" />
+
+  <!-- 敵に「この味方を狙え」と指示する（AI が対応していれば敵も反撃してきます） -->
+  <TauntEnemies value="true" />
+  <!-- 敵ゾンビも味方ゾンビを追跡・攻撃する（ダメージ・間隔・射程は DirectAssist* と共通） -->
+  <EnemyAttackAlly value="true" />
+
+  <!-- 敵を見つけたら、追従より優先して敵に突っ込ませる -->
+  <EngageEnemies value="true" />
+
+  <!-- 味方が倒した敵も味方にする（上限は MaxAllies） -->
+  <ConvertOnAllyKill value="true" />
+
+
+  <!-- ===== その他 ===== -->
+
+  <!-- 更新間隔(秒)。小さくすると反応が良くなりますが、重くなります -->
+  <TickInterval value="0.35" />
+
+  <!-- 画面に「味方になった」等のツールチップを出す。false にするとログのみに -->
+  <ShowMessages value="true" />
+
+  <!-- 詳細ログを出力する（動作がおかしい時だけ true に） -->
+  <DebugLog value="false" />
+
+</AllyOnKill>

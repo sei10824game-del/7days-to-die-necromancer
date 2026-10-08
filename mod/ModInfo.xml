@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+    <Name value="AllyOnKill" />
+    <DisplayName value="Ally On Kill - 倒した敵を味方に" />
+    <Version value="1.1.0" />
+    <Description value="倒した敵を味方として蘇らせる MOD。味方はデスポーンせず、G キーで追従の ON/OFF を切り替えられます。" />
+    <Author value="you" />
+    <Website value="" />
+</xml>
