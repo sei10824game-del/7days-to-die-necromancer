@@ -25,6 +25,8 @@ namespace AllyOnKill
         private static MethodInfo _damageEntity;
         private static ParameterInfo[] _dmgParams;
 
+        private static ConstructorInfo _entityCtor;
+        private static object[] _entityCtorArgs;
         private static object _constructed;
         private static object _captured;
         private static bool _captureTried;
@@ -74,13 +76,12 @@ namespace AllyOnKill
             if (_captured != null) return;
 
             _captured = _damageSource;
-            _dsType = _damageSource.GetType();
             _captureTried = true;
 
             // 起動時に一度失敗していても、ここで再挑戦できるようにする
             _dirty = true;
 
-            Log.Out("[AllyOnKill] DamageSource の実インスタンスを取得しました: " + _dsType.FullName);
+            Log.Out("[AllyOnKill] DamageSource の実インスタンスを取得しました: " + _damageSource.GetType().FullName);
         }
 
         /// <summary>直接ダメージを与えます。成功したら true</summary>
@@ -93,12 +94,24 @@ namespace AllyOnKill
             if (!_available) return false;
 
             // 捕まえた実インスタンスを優先し、無ければ自前生成したものを使う
-            var ds = _captured ?? _constructed;
+            // 攻撃者ID入りの DamageSourceEntity(External, Bashing, id) を毎回新規生成（通常の近接攻撃と同じ）
+            object ds = null;
+            try
+            {
+                if (_entityCtor != null)
+                {
+                    var a = (object[])_entityCtorArgs.Clone();
+                    a[2] = attacker.entityId;
+                    ds = _entityCtor.Invoke(a);
+                }
+            }
+            catch { ds = null; }
+            if (ds == null) ds = _captured ?? _constructed;
             if (ds == null) return false;
 
             try
             {
-                SetAttacker(ds, attacker.entityId);
+                if (_entityCtor == null) SetAttacker(ds, attacker.entityId);
 
                 var args = BuildArgs(_dmgParams, ds, strength);
                 _damageEntity.Invoke(victim, args);
@@ -161,7 +174,8 @@ namespace AllyOnKill
                 _detail.Append("DamageEntity(").Append(_dmgParams.Length).Append("引数); ");
 
                 // 自前生成にも挑戦しておく（捕まえられなかった時の保険）
-                _constructed = TryConstruct();
+                TryEntityCtor();
+                _constructed = _entityCtor != null ? _entityCtor.Invoke(_entityCtorArgs) : TryConstruct();
                 _detail.Append(_constructed != null ? "自前生成=可; " : "自前生成=不可; ");
                 _detail.Append(_captureTried ? "実行時取得=済; " : "実行時取得=未; ");
 
@@ -190,6 +204,34 @@ namespace AllyOnKill
                 Reason = e.Message;
                 Log.Warning("[AllyOnKill] 直接攻撃の初期化に失敗: " + e.Message);
             }
+        }
+
+        /// <summary>バニラの近接攻撃と同じ DamageSourceEntity(External, Bashing, id) を探す</summary>
+        private static void TryEntityCtor()
+        {
+            _entityCtor = null;
+            try
+            {
+                var t = FindType("DamageSourceEntity");
+                var eSrc = FindType("EnumDamageSource");
+                var eTyp = FindType("EnumDamageTypes");
+                if (t == null || eSrc == null || eTyp == null) return;
+                foreach (var c in t.GetConstructors(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    var ps = c.GetParameters();
+                    if (ps.Length < 3 || ps[0].ParameterType != eSrc || ps[1].ParameterType != eTyp || ps[2].ParameterType != typeof(int)) continue;
+                    var args = new object[ps.Length];
+                    for (var i = 0; i < ps.Length; i++) args[i] = DefaultValue(ps[i].ParameterType);
+                    args[0] = EnumValue(eSrc, "External");
+                    args[1] = EnumValue(eTyp, "Bashing");
+                    args[2] = -1;
+                    _entityCtor = c;
+                    _entityCtorArgs = args;
+                    _detail.Append("DamageSourceEntity=可; ");
+                    return;
+                }
+            }
+            catch { _entityCtor = null; }
         }
 
         /// <summary>
